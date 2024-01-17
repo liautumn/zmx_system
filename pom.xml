@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.autumn</groupId>
-    <artifactId>autumn</artifactId>
+    <artifactId>zmx_system</artifactId>
     <version>3.8.7</version>
     <packaging>jar</packaging>
 
