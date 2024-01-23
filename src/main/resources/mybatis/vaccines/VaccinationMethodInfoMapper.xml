@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.autumn.project.vaccines.mapper.VaccinationMethodInfoMapper">
+    
+    <resultMap type="VaccinationMethodInfo" id="VaccinationMethodInfoResult">
+        <result property="id"    column="id"    />
+        <result property="vaccinationMethodName"    column="vaccination_method_name"    />
+        <result property="vaccinationMethodCode"    column="vaccination_method_code"    />
+        <result property="state"    column="state"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="ext1"    column="ext1"    />
+        <result property="ext2"    column="ext2"    />
+        <result property="ext3"    column="ext3"    />
+        <result property="ext4"    column="ext4"    />
+        <result property="ext5"    column="ext5"    />
+        <result property="ext6"    column="ext6"    />
+        <result property="ext7"    column="ext7"    />
+        <result property="ext8"    column="ext8"    />
+        <result property="ext9"    column="ext9"    />
+        <result property="ext10"    column="ext10"    />
+    </resultMap>
+
+    <sql id="selectVaccinationMethodInfoVo">
+        select id, vaccination_method_name, vaccination_method_code, state, create_by, create_time, update_by, update_time, remark, ext1, ext2, ext3, ext4, ext5, ext6, ext7, ext8, ext9, ext10 from vaccination_method_info
+    </sql>
+
+    <select id="selectVaccinationMethodInfoList" parameterType="VaccinationMethodInfo" resultMap="VaccinationMethodInfoResult">
+        <include refid="selectVaccinationMethodInfoVo"/>
+        <where>  
+            <if test="vaccinationMethodName != null  and vaccinationMethodName != ''"> and vaccination_method_name like concat('%', #{vaccinationMethodName}, '%')</if>
+            <if test="vaccinationMethodCode != null  and vaccinationMethodCode != ''"> and vaccination_method_code = #{vaccinationMethodCode}</if>
+            <if test="state != null  and state != ''"> and state = #{state}</if>
+            <if test="createBy != null  and createBy != ''"> and create_by = #{createBy}</if>
+            <if test="createTime != null "> and create_time = #{createTime}</if>
+            <if test="ext1 != null  and ext1 != ''"> and ext1 = #{ext1}</if>
+            <if test="ext2 != null  and ext2 != ''"> and ext2 = #{ext2}</if>
+            <if test="ext3 != null  and ext3 != ''"> and ext3 = #{ext3}</if>
+            <if test="ext4 != null  and ext4 != ''"> and ext4 = #{ext4}</if>
+            <if test="ext5 != null  and ext5 != ''"> and ext5 = #{ext5}</if>
+            <if test="ext6 != null  and ext6 != ''"> and ext6 = #{ext6}</if>
+            <if test="ext7 != null  and ext7 != ''"> and ext7 = #{ext7}</if>
+            <if test="ext8 != null  and ext8 != ''"> and ext8 = #{ext8}</if>
+            <if test="ext9 != null  and ext9 != ''"> and ext9 = #{ext9}</if>
+            <if test="ext10 != null  and ext10 != ''"> and ext10 = #{ext10}</if>
+        </where>
+    </select>
+    
+    <select id="selectVaccinationMethodInfoById" parameterType="Long" resultMap="VaccinationMethodInfoResult">
+        <include refid="selectVaccinationMethodInfoVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertVaccinationMethodInfo" parameterType="VaccinationMethodInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into vaccination_method_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="vaccinationMethodName != null and vaccinationMethodName != ''">vaccination_method_name,</if>
+            <if test="vaccinationMethodCode != null and vaccinationMethodCode != ''">vaccination_method_code,</if>
+            <if test="state != null">state,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+            <if test="ext1 != null">ext1,</if>
+            <if test="ext2 != null">ext2,</if>
+            <if test="ext3 != null">ext3,</if>
+            <if test="ext4 != null">ext4,</if>
+            <if test="ext5 != null">ext5,</if>
+            <if test="ext6 != null">ext6,</if>
+            <if test="ext7 != null">ext7,</if>
+            <if test="ext8 != null">ext8,</if>
+            <if test="ext9 != null">ext9,</if>
+            <if test="ext10 != null">ext10,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="vaccinationMethodName != null and vaccinationMethodName != ''">#{vaccinationMethodName},</if>
+            <if test="vaccinationMethodCode != null and vaccinationMethodCode != ''">#{vaccinationMethodCode},</if>
+            <if test="state != null">#{state},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="ext1 != null">#{ext1},</if>
+            <if test="ext2 != null">#{ext2},</if>
+            <if test="ext3 != null">#{ext3},</if>
+            <if test="ext4 != null">#{ext4},</if>
+            <if test="ext5 != null">#{ext5},</if>
+            <if test="ext6 != null">#{ext6},</if>
+            <if test="ext7 != null">#{ext7},</if>
+            <if test="ext8 != null">#{ext8},</if>
+            <if test="ext9 != null">#{ext9},</if>
+            <if test="ext10 != null">#{ext10},</if>
+         </trim>
+    </insert>
+
+    <update id="updateVaccinationMethodInfo" parameterType="VaccinationMethodInfo">
+        update vaccination_method_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="vaccinationMethodName != null and vaccinationMethodName != ''">vaccination_method_name = #{vaccinationMethodName},</if>
+            <if test="vaccinationMethodCode != null and vaccinationMethodCode != ''">vaccination_method_code = #{vaccinationMethodCode},</if>
+            <if test="state != null">state = #{state},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="ext1 != null">ext1 = #{ext1},</if>
+            <if test="ext2 != null">ext2 = #{ext2},</if>
+            <if test="ext3 != null">ext3 = #{ext3},</if>
+            <if test="ext4 != null">ext4 = #{ext4},</if>
+            <if test="ext5 != null">ext5 = #{ext5},</if>
+            <if test="ext6 != null">ext6 = #{ext6},</if>
+            <if test="ext7 != null">ext7 = #{ext7},</if>
+            <if test="ext8 != null">ext8 = #{ext8},</if>
+            <if test="ext9 != null">ext9 = #{ext9},</if>
+            <if test="ext10 != null">ext10 = #{ext10},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteVaccinationMethodInfoById" parameterType="Long">
+        delete from vaccination_method_info where id = #{id}
+    </delete>
+
+    <delete id="deleteVaccinationMethodInfoByIds" parameterType="String">
+        delete from vaccination_method_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
