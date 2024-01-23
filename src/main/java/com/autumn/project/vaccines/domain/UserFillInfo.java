@@ -104,7 +104,7 @@ public class UserFillInfo extends BaseEntity {
     /**
      * 状态(1用户草稿，2用户推送，3系统选择，4管理员审核，5用户已读)
      */
-    @Excel(name = "状态")
+    @Excel(name = "状态", dictType = "user_fill_state")
     private String state;
 
     /**

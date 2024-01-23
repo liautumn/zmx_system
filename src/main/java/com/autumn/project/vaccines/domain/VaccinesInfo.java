@@ -52,7 +52,7 @@ public class VaccinesInfo extends BaseEntity {
     /**
      * 状态
      */
-    @Excel(name = "状态")
+    @Excel(name = "状态", dictType = "sys_normal_disable")
     private String state;
 
     /**
