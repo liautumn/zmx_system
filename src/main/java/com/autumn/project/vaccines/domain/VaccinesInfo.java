@@ -37,73 +37,70 @@ public class VaccinesInfo extends BaseEntity {
     @Excel(name = "接种方式")
     private String vaccinationMethodCode;
 
+    private String vaccinationMethodName;
     /**
      * 最小年龄(天)
      */
     @Excel(name = "最小年龄(天)")
     private Long ageMin;
-
     /**
      * 最大年龄(天)
      */
     @Excel(name = "最大年龄(天)")
     private Long ageMax;
-
     /**
      * 状态
      */
     @Excel(name = "状态", dictType = "sys_normal_disable")
     private String state;
-
     /**
      * 扩展字段1
      */
     private String ext1;
-
     /**
      * 扩展字段2
      */
     private String ext2;
-
     /**
      * 扩展字段3
      */
     private String ext3;
-
     /**
      * 扩展字段4
      */
     private String ext4;
-
     /**
      * 扩展字段5
      */
     private String ext5;
-
     /**
      * 扩展字段6
      */
     private String ext6;
-
     /**
      * 扩展字段7
      */
     private String ext7;
-
     /**
      * 扩展字段8
      */
     private String ext8;
-
     /**
      * 扩展字段9
      */
     private String ext9;
-
     /**
      * 扩展字段10
      */
     private String ext10;
+
+    public String getVaccinationMethodName() {
+        return vaccinationMethodName;
+    }
+
+    public void setVaccinationMethodName(String vaccinationMethodName) {
+        this.vaccinationMethodName = vaccinationMethodName;
+    }
 
     public Long getId() {
         return id;

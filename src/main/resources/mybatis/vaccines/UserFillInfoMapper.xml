@@ -98,7 +98,15 @@
             <if test="ext8 != null  and ext8 != ''">and ext8 = #{ext8}</if>
             <if test="ext9 != null  and ext9 != ''">and ext9 = #{ext9}</if>
             <if test="ext10 != null  and ext10 != ''">and ext10 = #{ext10}</if>
+            <if test="flag1 != null  and flag1 != ''">and score is not null</if>
+            <if test="flag2 != null  and flag2 != ''">and score is null</if>
+            <if test="stateIn != null  and stateIn.length > 0">and state in
+                <foreach item="item" collection="stateIn" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
+        order by create_time desc
     </select>
 
     <select id="selectUserFillInfoById" parameterType="Long" resultMap="UserFillInfoResult">

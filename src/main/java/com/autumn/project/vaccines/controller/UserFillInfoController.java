@@ -1,11 +1,14 @@
 package com.autumn.project.vaccines.controller;
 
+import com.autumn.common.utils.SecurityUtils;
 import com.autumn.common.utils.poi.ExcelUtil;
 import com.autumn.framework.aspectj.lang.annotation.Log;
 import com.autumn.framework.aspectj.lang.enums.BusinessType;
 import com.autumn.framework.web.controller.BaseController;
 import com.autumn.framework.web.domain.AjaxResult;
 import com.autumn.framework.web.page.TableDataInfo;
+import com.autumn.project.common.StaticState;
+import com.autumn.project.system.domain.SysUser;
 import com.autumn.project.vaccines.domain.UserFillInfo;
 import com.autumn.project.vaccines.service.IUserFillInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +16,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户填报信息Controller
@@ -35,7 +40,32 @@ public class UserFillInfoController extends BaseController {
     public TableDataInfo list(UserFillInfo userFillInfo) {
         startPage();
         List<UserFillInfo> list = userFillInfoService.selectUserFillInfoList(userFillInfo);
-        return getDataTable(list);
+        SysUser user = SecurityUtils.getLoginUser().getUser();
+        Map map = new HashMap();
+        if (user.isAdmin()) {
+            //查询未读，已评价数量；
+            UserFillInfo userFillInfo1 = new UserFillInfo();
+            userFillInfo1.setState(StaticState.FIVE);
+            userFillInfo1.setFlag1("1");
+            List<UserFillInfo> userFillInfos = userFillInfoService.selectUserFillInfoList(userFillInfo1);
+            map.put("adminYPJ", userFillInfos.size());
+            UserFillInfo userFillInfo2 = new UserFillInfo();
+            userFillInfo2.setStateIn(new String[]{"2", "3"});
+            List<UserFillInfo> fillInfos = userFillInfoService.selectUserFillInfoList(userFillInfo2);
+            map.put("adminWD", fillInfos.size());
+        } else {
+            //查询未读，待评价数量；
+            UserFillInfo userFillInfo1 = new UserFillInfo();
+            userFillInfo1.setState(StaticState.FIVE);
+            userFillInfo1.setFlag2("1");
+            List<UserFillInfo> userFillInfos = userFillInfoService.selectUserFillInfoList(userFillInfo1);
+            map.put("DPJ", userFillInfos.size());
+            UserFillInfo userFillInfo2 = new UserFillInfo();
+            userFillInfo2.setState(StaticState.FOUR);
+            List<UserFillInfo> userFillInfos2 = userFillInfoService.selectUserFillInfoList(userFillInfo2);
+            map.put("WD", userFillInfos2.size());
+        }
+        return getDataTable2(list, map);
     }
 
     /**

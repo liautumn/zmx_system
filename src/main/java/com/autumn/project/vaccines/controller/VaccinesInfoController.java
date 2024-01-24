@@ -16,7 +16,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 疫苗信息Controller
@@ -31,6 +34,20 @@ public class VaccinesInfoController extends BaseController {
     private IVaccinesInfoService vaccinesInfoService;
     @Autowired
     private IVaccinationMethodInfoService vaccinationMethodInfoService;
+
+    @GetMapping("/getVaccinationInfoByMapToLV")
+    public AjaxResult getVaccinationInfoByMapToLV(VaccinesInfo vaccinesInfo) {
+        vaccinesInfo.setState("0");
+        List<VaccinesInfo> list = vaccinesInfoService.selectVaccinesInfoList(vaccinesInfo);
+        List<Map> mapList = new ArrayList<>();
+        for (VaccinesInfo info : list) {
+            Map map = new HashMap();
+            map.put("label", info.getVaccinesName());
+            map.put("value", info.getVaccinesCode());
+            mapList.add(map);
+        }
+        return AjaxResult.success(mapList);
+    }
 
     /**
      * 查询疫苗信息列表

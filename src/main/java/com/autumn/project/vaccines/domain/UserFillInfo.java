@@ -17,9 +17,11 @@ import java.util.Date;
 public class UserFillInfo extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
+    private String flag1;
+    private String flag2;
     private String roleFlag;
-
     private Boolean scoreIsNull;
+    private String[] stateIn;
     /**
      * ID
      */
@@ -135,6 +137,30 @@ public class UserFillInfo extends BaseEntity {
      * 扩展字段10
      */
     private String ext10;
+
+    public String getFlag2() {
+        return flag2;
+    }
+
+    public void setFlag2(String flag2) {
+        this.flag2 = flag2;
+    }
+
+    public String getFlag1() {
+        return flag1;
+    }
+
+    public void setFlag1(String flag1) {
+        this.flag1 = flag1;
+    }
+
+    public String[] getStateIn() {
+        return stateIn;
+    }
+
+    public void setStateIn(String[] stateIn) {
+        this.stateIn = stateIn;
+    }
 
     public Boolean getScoreIsNull() {
         return scoreIsNull;
