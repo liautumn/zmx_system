@@ -1,48 +1,58 @@
 package com.autumn.project.vaccines.controller;
 
-import java.util.List;
-import javax.servlet.http.HttpServletResponse;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.autumn.common.utils.poi.ExcelUtil;
 import com.autumn.framework.aspectj.lang.annotation.Log;
 import com.autumn.framework.aspectj.lang.enums.BusinessType;
-import com.autumn.project.vaccines.domain.VaccinesInfo;
-import com.autumn.project.vaccines.service.IVaccinesInfoService;
 import com.autumn.framework.web.controller.BaseController;
 import com.autumn.framework.web.domain.AjaxResult;
-import com.autumn.common.utils.poi.ExcelUtil;
 import com.autumn.framework.web.page.TableDataInfo;
+import com.autumn.project.vaccines.domain.VaccinationMethodInfo;
+import com.autumn.project.vaccines.domain.VaccinesInfo;
+import com.autumn.project.vaccines.service.IVaccinationMethodInfoService;
+import com.autumn.project.vaccines.service.IVaccinesInfoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * 疫苗信息Controller
- * 
+ *
  * @author autumn
  * @date 2024-01-23
  */
 @RestController
 @RequestMapping("/vaccines/vaccinesInfo")
-public class VaccinesInfoController extends BaseController
-{
+public class VaccinesInfoController extends BaseController {
     @Autowired
     private IVaccinesInfoService vaccinesInfoService;
+    @Autowired
+    private IVaccinationMethodInfoService vaccinationMethodInfoService;
 
     /**
      * 查询疫苗信息列表
      */
     @PreAuthorize("@ss.hasPermi('vaccines:vaccinesInfo:list')")
     @GetMapping("/list")
-    public TableDataInfo list(VaccinesInfo vaccinesInfo)
-    {
+    public TableDataInfo list(VaccinesInfo vaccinesInfo) {
         startPage();
         List<VaccinesInfo> list = vaccinesInfoService.selectVaccinesInfoList(vaccinesInfo);
+        VaccinationMethodInfo vaccinationMethodInfo = new VaccinationMethodInfo();
+        vaccinationMethodInfo.setState("0");
+        List<VaccinationMethodInfo> vaccinationMethodInfos = vaccinationMethodInfoService.selectVaccinationMethodInfoList(vaccinationMethodInfo);
+        if (!CollectionUtils.isEmpty(list)) {
+            for (VaccinesInfo info : list) {
+                for (VaccinationMethodInfo methodInfo : vaccinationMethodInfos) {
+                    if (methodInfo.getVaccinationMethodCode().equals(info.getVaccinationMethodCode())) {
+                        info.setVaccinationMethodCode(methodInfo.getVaccinationMethodName());
+                        break;
+                    }
+                }
+            }
+        }
         return getDataTable(list);
     }
 
@@ -52,8 +62,7 @@ public class VaccinesInfoController extends BaseController
     @PreAuthorize("@ss.hasPermi('vaccines:vaccinesInfo:export')")
     @Log(title = "疫苗信息", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, VaccinesInfo vaccinesInfo)
-    {
+    public void export(HttpServletResponse response, VaccinesInfo vaccinesInfo) {
         List<VaccinesInfo> list = vaccinesInfoService.selectVaccinesInfoList(vaccinesInfo);
         ExcelUtil<VaccinesInfo> util = new ExcelUtil<VaccinesInfo>(VaccinesInfo.class);
         util.exportExcel(response, list, "疫苗信息数据");
@@ -64,8 +73,7 @@ public class VaccinesInfoController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('vaccines:vaccinesInfo:query')")
     @GetMapping(value = "/{id}")
-    public AjaxResult getInfo(@PathVariable("id") Long id)
-    {
+    public AjaxResult getInfo(@PathVariable("id") Long id) {
         return success(vaccinesInfoService.selectVaccinesInfoById(id));
     }
 
@@ -75,8 +83,7 @@ public class VaccinesInfoController extends BaseController
     @PreAuthorize("@ss.hasPermi('vaccines:vaccinesInfo:add')")
     @Log(title = "疫苗信息", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody VaccinesInfo vaccinesInfo)
-    {
+    public AjaxResult add(@RequestBody VaccinesInfo vaccinesInfo) {
         return toAjax(vaccinesInfoService.insertVaccinesInfo(vaccinesInfo));
     }
 
@@ -86,8 +93,7 @@ public class VaccinesInfoController extends BaseController
     @PreAuthorize("@ss.hasPermi('vaccines:vaccinesInfo:edit')")
     @Log(title = "疫苗信息", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody VaccinesInfo vaccinesInfo)
-    {
+    public AjaxResult edit(@RequestBody VaccinesInfo vaccinesInfo) {
         return toAjax(vaccinesInfoService.updateVaccinesInfo(vaccinesInfo));
     }
 
@@ -96,9 +102,8 @@ public class VaccinesInfoController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('vaccines:vaccinesInfo:remove')")
     @Log(title = "疫苗信息", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{ids}")
-    public AjaxResult remove(@PathVariable Long[] ids)
-    {
+    @DeleteMapping("/{ids}")
+    public AjaxResult remove(@PathVariable Long[] ids) {
         return toAjax(vaccinesInfoService.deleteVaccinesInfoByIds(ids));
     }
 }

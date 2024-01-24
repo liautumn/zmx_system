@@ -17,145 +17,140 @@ import java.util.Date;
 public class UserFillInfo extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
+    private String roleFlag;
+
+    private Boolean scoreIsNull;
     /**
      * ID
      */
     private Long id;
-
     /**
      * 用户ID
      */
     private Long userId;
-
     /**
      * 家长姓名
      */
     @Excel(name = "家长姓名")
     private String userName;
-
     /**
      * 家长性别
      */
     @Excel(name = "家长性别", dictType = "sys_user_sex")
     private String userSex;
-
     /**
      * 孩子姓名
      */
     @Excel(name = "孩子姓名")
     private String childrenName;
-
     /**
      * 孩子性别
      */
     @Excel(name = "孩子性别", dictType = "sys_user_sex")
     private String childrenSex;
-
     /**
      * 孩子出生日期
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "孩子出生日期", width = 30, dateFormat = "yyyy-MM-dd")
     private Date childrenBirthday;
-
     /**
      * 填报日期
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "填报日期", width = 30, dateFormat = "yyyy-MM-dd")
     private Date today;
-
     /**
      * 孩子过敏事项
      */
     @Excel(name = "孩子过敏事项")
     private String childrenAllergy;
-
     /**
      * 家长手机号码
      */
     @Excel(name = "家长手机号码")
     private String userPhone;
-
     /**
      * 家庭住址
      */
     @Excel(name = "家庭住址")
     private String address;
-
     /**
      * 注意事项
      */
     @Excel(name = "注意事项")
     private String takeCare;
-
     /**
      * 评分
      */
     @Excel(name = "评分")
     private String score;
-
     /**
      * 意见建议
      */
     @Excel(name = "意见建议")
     private String opinions;
-
     /**
      * 状态(1用户草稿，2用户推送，3系统选择，4管理员审核，5用户已读)
      */
     @Excel(name = "状态", dictType = "user_fill_state")
     private String state;
-
     /**
      * 扩展字段1
      */
     private String ext1;
-
     /**
      * 扩展字段2
      */
     private String ext2;
-
     /**
      * 扩展字段3
      */
     private String ext3;
-
     /**
      * 扩展字段4
      */
     private String ext4;
-
     /**
      * 扩展字段5
      */
     private String ext5;
-
     /**
      * 扩展字段6
      */
     private String ext6;
-
     /**
      * 扩展字段7
      */
     private String ext7;
-
     /**
      * 扩展字段8
      */
     private String ext8;
-
     /**
      * 扩展字段9
      */
     private String ext9;
-
     /**
      * 扩展字段10
      */
     private String ext10;
+
+    public Boolean getScoreIsNull() {
+        return scoreIsNull;
+    }
+
+    public void setScoreIsNull(Boolean scoreIsNull) {
+        this.scoreIsNull = scoreIsNull;
+    }
+
+    public String getRoleFlag() {
+        return roleFlag;
+    }
+
+    public void setRoleFlag(String roleFlag) {
+        this.roleFlag = roleFlag;
+    }
 
     public Long getId() {
         return id;

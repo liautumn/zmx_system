@@ -13,7 +13,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 接种方法信息Controller
@@ -26,6 +29,20 @@ import java.util.List;
 public class VaccinationMethodInfoController extends BaseController {
     @Autowired
     private IVaccinationMethodInfoService vaccinationMethodInfoService;
+
+    @GetMapping("/getVaccinationMethodByMapToLV")
+    public AjaxResult getVaccinationMethodByMapToLV(VaccinationMethodInfo vaccinationMethodInfo) {
+        vaccinationMethodInfo.setState("0");
+        List<VaccinationMethodInfo> list = vaccinationMethodInfoService.selectVaccinationMethodInfoList(vaccinationMethodInfo);
+        List<Map> mapList = new ArrayList<>();
+        for (VaccinationMethodInfo methodInfo : list) {
+            Map map = new HashMap();
+            map.put("label", methodInfo.getVaccinationMethodName());
+            map.put("value", methodInfo.getVaccinationMethodCode());
+            mapList.add(map);
+        }
+        return AjaxResult.success(mapList);
+    }
 
     /**
      * 查询接种方法信息列表
