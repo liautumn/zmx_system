@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.autumn.project.vaccines.mapper.AgeVaccinesInfoMapper">
+
+    <resultMap type="AgeVaccinesInfo" id="AgeVaccinesInfoResult">
+        <result property="id" column="id"/>
+        <result property="age" column="age"/>
+        <result property="ageMin" column="age_min"/>
+        <result property="ageMax" column="age_max"/>
+        <result property="vaccinesCodes" column="vaccines_codes"/>
+        <result property="takeCare" column="take_care"/>
+        <result property="state" column="state"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="ext2" column="ext2"/>
+        <result property="ext3" column="ext3"/>
+        <result property="ext4" column="ext4"/>
+        <result property="ext5" column="ext5"/>
+        <result property="ext6" column="ext6"/>
+        <result property="ext7" column="ext7"/>
+        <result property="ext8" column="ext8"/>
+        <result property="ext9" column="ext9"/>
+        <result property="ext10" column="ext10"/>
+    </resultMap>
+
+    <sql id="selectAgeVaccinesInfoVo">
+        select id,
+               age,
+               age_min,
+               age_max,
+               vaccines_codes,
+               take_care,
+               state,
+               create_by,
+               create_time,
+               update_by,
+               update_time,
+               remark,
+               ext2,
+               ext3,
+               ext4,
+               ext5,
+               ext6,
+               ext7,
+               ext8,
+               ext9,
+               ext10
+        from age_vaccines_info
+    </sql>
+
+    <select id="selectAgeVaccinesInfoList" parameterType="AgeVaccinesInfo" resultMap="AgeVaccinesInfoResult">
+        <include refid="selectAgeVaccinesInfoVo"/>
+        <where>
+            <if test="age != null ">and age = #{age}</if>
+            <if test="ageMin != null ">and age_min = #{ageMin}</if>
+            <if test="ageMax != null ">and age_max = #{ageMax}</if>
+            <if test="vaccinesCodes != null  and vaccinesCodes != ''">and vaccines_codes = #{vaccinesCodes}</if>
+            <if test="takeCare != null  and takeCare != ''">and take_care = #{takeCare}</if>
+            <if test="state != null  and state != ''">and state = #{state}</if>
+            <if test="createTime != null ">and create_time = #{createTime}</if>
+            <if test="ext2 != null  and ext2 != ''">and ext2 = #{ext2}</if>
+            <if test="ext3 != null  and ext3 != ''">and ext3 = #{ext3}</if>
+            <if test="ext4 != null  and ext4 != ''">and ext4 = #{ext4}</if>
+            <if test="ext5 != null  and ext5 != ''">and ext5 = #{ext5}</if>
+            <if test="ext6 != null  and ext6 != ''">and ext6 = #{ext6}</if>
+            <if test="ext7 != null  and ext7 != ''">and ext7 = #{ext7}</if>
+            <if test="ext8 != null  and ext8 != ''">and ext8 = #{ext8}</if>
+            <if test="ext9 != null  and ext9 != ''">and ext9 = #{ext9}</if>
+            <if test="ext10 != null  and ext10 != ''">and ext10 = #{ext10}</if>
+        </where>
+        order by age_max asc
+    </select>
+
+    <select id="selectAgeVaccinesInfoById" parameterType="Long" resultMap="AgeVaccinesInfoResult">
+        <include refid="selectAgeVaccinesInfoVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="getAgeIntervalData" resultMap="AgeVaccinesInfoResult">
+        <include refid="selectAgeVaccinesInfoVo"/>
+        where state = '0' and age_min &lt;= #{age}
+        and age_max &gt; #{age}
+    </select>
+
+    <insert id="insertAgeVaccinesInfo" parameterType="AgeVaccinesInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into age_vaccines_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="age != null">age,</if>
+            <if test="ageMin != null">age_min,</if>
+            <if test="ageMax != null">age_max,</if>
+            <if test="vaccinesCodes != null and vaccinesCodes != ''">vaccines_codes,</if>
+            <if test="takeCare != null">take_care,</if>
+            <if test="state != null and state != ''">state,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+            <if test="ext2 != null">ext2,</if>
+            <if test="ext3 != null">ext3,</if>
+            <if test="ext4 != null">ext4,</if>
+            <if test="ext5 != null">ext5,</if>
+            <if test="ext6 != null">ext6,</if>
+            <if test="ext7 != null">ext7,</if>
+            <if test="ext8 != null">ext8,</if>
+            <if test="ext9 != null">ext9,</if>
+            <if test="ext10 != null">ext10,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="age != null">#{age},</if>
+            <if test="ageMin != null">#{ageMin},</if>
+            <if test="ageMax != null">#{ageMax},</if>
+            <if test="vaccinesCodes != null and vaccinesCodes != ''">#{vaccinesCodes},</if>
+            <if test="takeCare != null">#{takeCare},</if>
+            <if test="state != null and state != ''">#{state},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="ext2 != null">#{ext2},</if>
+            <if test="ext3 != null">#{ext3},</if>
+            <if test="ext4 != null">#{ext4},</if>
+            <if test="ext5 != null">#{ext5},</if>
+            <if test="ext6 != null">#{ext6},</if>
+            <if test="ext7 != null">#{ext7},</if>
+            <if test="ext8 != null">#{ext8},</if>
+            <if test="ext9 != null">#{ext9},</if>
+            <if test="ext10 != null">#{ext10},</if>
+        </trim>
+    </insert>
+
+    <update id="updateAgeVaccinesInfo" parameterType="AgeVaccinesInfo">
+        update age_vaccines_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="age != null">age = #{age},</if>
+            <if test="ageMin != null">age_min = #{ageMin},</if>
+            <if test="ageMax != null">age_max = #{ageMax},</if>
+            <if test="vaccinesCodes != null and vaccinesCodes != ''">vaccines_codes = #{vaccinesCodes},</if>
+            <if test="takeCare != null">take_care = #{takeCare},</if>
+            <if test="state != null and state != ''">state = #{state},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="ext2 != null">ext2 = #{ext2},</if>
+            <if test="ext3 != null">ext3 = #{ext3},</if>
+            <if test="ext4 != null">ext4 = #{ext4},</if>
+            <if test="ext5 != null">ext5 = #{ext5},</if>
+            <if test="ext6 != null">ext6 = #{ext6},</if>
+            <if test="ext7 != null">ext7 = #{ext7},</if>
+            <if test="ext8 != null">ext8 = #{ext8},</if>
+            <if test="ext9 != null">ext9 = #{ext9},</if>
+            <if test="ext10 != null">ext10 = #{ext10},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAgeVaccinesInfoById" parameterType="Long">
+        delete
+        from age_vaccines_info
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteAgeVaccinesInfoByIds" parameterType="String">
+        delete from age_vaccines_info where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

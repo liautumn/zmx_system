@@ -1,12 +1,16 @@
 package com.autumn.project.vaccines.service.impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.autumn.common.mail.MailBean;
+import com.autumn.common.mail.MailUtil;
 import com.autumn.common.utils.DateUtils;
 import com.autumn.common.utils.SecurityUtils;
 import com.autumn.project.common.StaticState;
 import com.autumn.project.system.domain.SysUser;
+import com.autumn.project.vaccines.domain.AgeVaccinesInfo;
 import com.autumn.project.vaccines.domain.UserFillInfo;
 import com.autumn.project.vaccines.domain.VaccinesInfo;
+import com.autumn.project.vaccines.mapper.AgeVaccinesInfoMapper;
 import com.autumn.project.vaccines.mapper.UserFillInfoMapper;
 import com.autumn.project.vaccines.mapper.VaccinesInfoMapper;
 import com.autumn.project.vaccines.service.IUserFillInfoService;
@@ -34,6 +38,10 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
     private UserFillInfoMapper userFillInfoMapper;
     @Autowired
     private VaccinesInfoMapper vaccinesInfoMapper;
+    @Autowired
+    private MailUtil mailUtil;
+    @Autowired
+    private AgeVaccinesInfoMapper ageVaccinesInfoMapper;
 
     /**
      * 查询用户填报信息
@@ -78,44 +86,7 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
         }
         if (userFillInfo.getRoleFlag().equals(StaticState.TWO)) {
             userFillInfo.setState(StaticState.TWO);
-            //系统根据数据选择
-            String childrenAllergy = userFillInfo.getChildrenAllergy();
-            boolean notBlank = StringUtils.isBlank(childrenAllergy);
-            if (notBlank) {
-                //计算年龄天数
-                Date today = userFillInfo.getToday();
-                Date childrenBirthday = userFillInfo.getChildrenBirthday();
-                int days = DateUtils.differentDaysByMillisecond(childrenBirthday, today);
-                if (days == 0) {
-                    days = 1;
-                }
-                Map map = new HashMap();
-                map.put("age", days);
-                List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.getAgeIntervalData(map);
-                String msg = MSG1;
-                String flag = "0";
-                if (!CollectionUtils.isEmpty(vaccinesInfoList)) {
-                    for (VaccinesInfo vaccinesInfo : vaccinesInfoList) {
-                        if (msg.equals(MSG1)) {
-                            msg = vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
-                        } else {
-                            msg = msg + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
-                        }
-                    }
-                } else {
-                    flag = "1";
-                }
-                userFillInfo.setExt1(msg);
-                if (!msg.equals(MSG1)) {
-                    userFillInfo.setState(StaticState.THREE);
-                }
-                //标记位是否需要人工选择
-                userFillInfo.setExt2(flag);
-            } else {
-                userFillInfo.setExt1(MSG2);
-                //标记位需要人工选择
-                userFillInfo.setExt2("1");
-            }
+            userFillInfo = getymData(userFillInfo);
         }
 
         return userFillInfoMapper.insertUserFillInfo(userFillInfo);
@@ -136,44 +107,7 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
             }
             if (userFillInfo.getRoleFlag().equals(StaticState.TWO)) {
                 userFillInfo.setState(StaticState.TWO);
-                //系统根据数据选择
-                String childrenAllergy = userFillInfo.getChildrenAllergy();
-                boolean notBlank = StringUtils.isBlank(childrenAllergy);
-                if (notBlank) {
-                    //计算年龄天数
-                    Date today = userFillInfo.getToday();
-                    Date childrenBirthday = userFillInfo.getChildrenBirthday();
-                    int days = DateUtils.differentDaysByMillisecond(childrenBirthday, today);
-                    if (days == 0) {
-                        days = 1;
-                    }
-                    Map map = new HashMap();
-                    map.put("age", days);
-                    List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.getAgeIntervalData(map);
-                    String msg = MSG1;
-                    String flag = "0";
-                    if (!CollectionUtils.isEmpty(vaccinesInfoList)) {
-                        for (VaccinesInfo vaccinesInfo : vaccinesInfoList) {
-                            if (msg.equals(MSG1)) {
-                                msg = vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
-                            } else {
-                                msg = msg + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
-                            }
-                        }
-                    } else {
-                        flag = "1";
-                    }
-                    userFillInfo.setExt1(msg);
-                    if (!msg.equals(MSG1)) {
-                        userFillInfo.setState(StaticState.THREE);
-                    }
-                    //标记位是否需要人工选择
-                    userFillInfo.setExt2(flag);
-                } else {
-                    userFillInfo.setExt1(MSG2);
-                    //标记位需要人工选择
-                    userFillInfo.setExt2("1");
-                }
+                userFillInfo = getymData(userFillInfo);
             }
 
         }
@@ -213,8 +147,80 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
                 userFillInfo.setState(StaticState.FIVE);
             }
         }
+        int i = userFillInfoMapper.updateUserFillInfo(userFillInfo);
 
-        return userFillInfoMapper.updateUserFillInfo(userFillInfo);
+        if (i > 0) {
+            if (userFillInfo.getState().equals(StaticState.FOUR)) {
+
+                UserFillInfo finalUserFillInfo = userFillInfo;
+                new Thread(() -> {
+                    //发送邮件
+                    MailBean mailBean = new MailBean();
+                    mailBean.setRecipient(finalUserFillInfo.getExt4());
+                    mailBean.setSubject("疫苗接种申请通过提醒");
+                    mailBean.setContent("尊贵的 " + finalUserFillInfo.getUserName() + " 您好，您申请的 " + finalUserFillInfo.getChildrenName() + " 疫苗接种申请通过了请到平台查收！");
+                    mailUtil.sendSimpleMail(mailBean);
+                }).start();
+            }
+        }
+
+        return i;
+    }
+
+    public UserFillInfo getymData(UserFillInfo userFillInfo) {
+        //系统根据数据选择
+        String childrenAllergy = userFillInfo.getChildrenAllergy();
+        boolean notBlank = StringUtils.isBlank(childrenAllergy);
+        if (notBlank) {
+            //计算年龄天数
+            Date today = userFillInfo.getToday();
+            Date childrenBirthday = userFillInfo.getChildrenBirthday();
+            int days = DateUtils.differentDaysByMillisecond(childrenBirthday, today);
+            if (days == 0) {
+                days = 1;
+            }
+
+            Map map = new HashMap();
+            map.put("age", days);
+            List<AgeVaccinesInfo> ageVaccinesInfos = ageVaccinesInfoMapper.getAgeIntervalData(map);
+            if (!CollectionUtils.isEmpty(ageVaccinesInfos)) {
+
+                String msg = MSG1;
+                String flag = "0";
+                AgeVaccinesInfo ageVaccinesInfo = ageVaccinesInfos.get(0);
+                String vaccinesCodes = ageVaccinesInfo.getVaccinesCodes();
+                String[] vaccinesCodeList = JSON.parseObject(vaccinesCodes, String[].class);
+                Map map1 = new HashMap();
+                map1.put("vaccinesCodes", vaccinesCodeList);
+                List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.getIntervalDataByMap(map1);
+                if (!CollectionUtils.isEmpty(vaccinesInfoList)) {
+                    for (VaccinesInfo vaccinesInfo : vaccinesInfoList) {
+                        if (msg.equals(MSG1)) {
+                            msg = vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
+                        } else {
+                            msg = msg + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
+                        }
+                    }
+                } else {
+                    flag = "1";
+                }
+                userFillInfo.setExt1(msg);
+                if (!msg.equals(MSG1)) {
+                    userFillInfo.setState(StaticState.THREE);
+                }
+                //标记位是否需要人工选择
+                userFillInfo.setExt2(flag);
+            } else {
+                userFillInfo.setExt1(MSG1);
+                //标记位需要人工选择
+                userFillInfo.setExt2("1");
+            }
+        } else {
+            userFillInfo.setExt1(MSG2);
+            //标记位需要人工选择
+            userFillInfo.setExt2("1");
+        }
+        return userFillInfo;
     }
 
     /**

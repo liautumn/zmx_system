@@ -63,4 +63,5 @@ public interface VaccinesInfoMapper {
     List<VaccinesInfo> getAgeIntervalData(Map map);
 
     List<VaccinesInfo> getIntervalDataByMap(Map map);
+
 }

@@ -13,6 +13,7 @@ import com.autumn.project.vaccines.domain.UserFillInfo;
 import com.autumn.project.vaccines.service.IUserFillInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -92,6 +93,7 @@ public class UserFillInfoController extends BaseController {
     /**
      * 新增用户填报信息
      */
+    @Transactional
     @PreAuthorize("@ss.hasPermi('vaccines:userFillInfo:add')")
     @Log(title = "用户填报信息", businessType = BusinessType.INSERT)
     @PostMapping
@@ -102,6 +104,7 @@ public class UserFillInfoController extends BaseController {
     /**
      * 修改用户填报信息
      */
+    @Transactional
     @PreAuthorize("@ss.hasPermi('vaccines:userFillInfo:edit')")
     @Log(title = "用户填报信息", businessType = BusinessType.UPDATE)
     @PutMapping
@@ -112,6 +115,7 @@ public class UserFillInfoController extends BaseController {
     /**
      * 删除用户填报信息
      */
+    @Transactional
     @PreAuthorize("@ss.hasPermi('vaccines:userFillInfo:remove')")
     @Log(title = "用户填报信息", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")

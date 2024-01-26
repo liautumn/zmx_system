@@ -88,6 +88,26 @@ spring:
         # #连接池最大阻塞等待时间（使用负值表示没有限制）
         max-wait: -1ms
 
+  # 邮件配置
+  mail:
+    # 邮件服务器地址
+    host: smtp.qq.com
+    # 你的邮箱地址
+    username: 1060590974@qq.com
+    # 授权码
+    password: xvmlokoaibxebege
+    # 编码格式
+    default-encoding: utf-8
+    # 协议
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
 # token配置
 token:
   # 令牌自定义标识
