@@ -9,14 +9,19 @@ import com.autumn.framework.web.controller.BaseController;
 import com.autumn.framework.web.domain.AjaxResult;
 import com.autumn.framework.web.page.TableDataInfo;
 import com.autumn.project.vaccines.domain.AgeVaccinesInfo;
+import com.autumn.project.vaccines.domain.VaccinesInfo;
+import com.autumn.project.vaccines.mapper.VaccinesInfoMapper;
 import com.autumn.project.vaccines.service.IAgeVaccinesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 各年龄段需打疫苗信息Controller
@@ -27,8 +32,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/vaccines/ageVaccinesInfo")
 public class AgeVaccinesInfoController extends BaseController {
+    public static final String MSG1 = "未匹配到数据，请联系工作人员";
     @Autowired
     private IAgeVaccinesInfoService ageVaccinesInfoService;
+    @Autowired
+    private VaccinesInfoMapper vaccinesInfoMapper;
 
     /**
      * 查询各年龄段需打疫苗信息列表
@@ -39,6 +47,36 @@ public class AgeVaccinesInfoController extends BaseController {
         startPage();
         List<AgeVaccinesInfo> list = ageVaccinesInfoService.selectAgeVaccinesInfoList(ageVaccinesInfo);
         return getDataTable(list);
+    }
+
+    @GetMapping("/getlcData")
+    public AjaxResult getlcData(AgeVaccinesInfo ageVaccinesInfo1) {
+        //查询流程
+        ageVaccinesInfo1.setState("0");
+        List<AgeVaccinesInfo> ageVaccinesInfos = ageVaccinesInfoService.selectAgeVaccinesInfoList(ageVaccinesInfo1);
+        if (!CollectionUtils.isEmpty(ageVaccinesInfos)) {
+            for (AgeVaccinesInfo ageVaccinesInfo : ageVaccinesInfos) {
+                Map map1 = new HashMap();
+                map1.put("vaccinesCodes", JSON.parseObject(ageVaccinesInfo.getVaccinesCodes(), String[].class));
+                List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.getIntervalDataByMap(map1);
+                String msg1 = MSG1;
+                if (!CollectionUtils.isEmpty(vaccinesInfoList)) {
+                    for (VaccinesInfo vaccinesInfo : vaccinesInfoList) {
+                        if (msg1.equals(MSG1)) {
+
+                            msg1 = vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
+                        } else {
+                            msg1 = msg1 + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
+                        }
+                    }
+                }
+                ageVaccinesInfo.setExt3(msg1);
+                ageVaccinesInfo.setExt2(
+                        ageVaccinesInfo.getAge() + "(" + ageVaccinesInfo.getAgeMin() + "天 - " + ageVaccinesInfo.getAgeMax() + "天)"
+                );
+            }
+        }
+        return AjaxResult.success(ageVaccinesInfos);
     }
 
     /**
