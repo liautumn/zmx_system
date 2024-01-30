@@ -141,6 +141,7 @@
                score is null scoreIsNull
         from user_fill_info
         where id = #{id}
+          and ext5 = '0'
     </select>
 
     <insert id="insertUserFillInfo" parameterType="UserFillInfo" useGeneratedKeys="true" keyProperty="id">
@@ -239,16 +240,35 @@
         where id = #{id}
     </update>
 
-    <delete id="deleteUserFillInfoById" parameterType="Long">
-        delete
-        from user_fill_info
-        where id = #{id}
-    </delete>
 
-    <delete id="deleteUserFillInfoByIds" parameterType="String">
-        delete from user_fill_info where id in
+    <update id="deleteUserFillInfoById" parameterType="Long">
+        update user_fill_info
+        set ext5 = '1'
+        where ext5 = '0'
+          and id = #{id}
+    </update>
+
+    <!--    <delete id="deleteUserFillInfoById" parameterType="Long">-->
+    <!--        delete-->
+    <!--        from user_fill_info-->
+    <!--        where id = #{id}-->
+    <!--    </delete>-->
+
+    <!--    <delete id="deleteUserFillInfoByIds" parameterType="String">-->
+    <!--        delete from user_fill_info where id in-->
+    <!--        <foreach item="id" collection="array" open="(" separator="," close=")">-->
+    <!--            #{id}-->
+    <!--        </foreach>-->
+    <!--    </delete>-->
+
+
+    <update id="deleteUserFillInfoByIds" parameterType="String">
+        update user_fill_info
+        set ext5 = '1'
+        where ext5 = '0' and id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>
-    </delete>
+    </update>
+
 </mapper>

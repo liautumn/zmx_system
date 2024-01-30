@@ -34,6 +34,7 @@ import java.util.Map;
 public class UserFillInfoServiceImpl implements IUserFillInfoService {
     public static final String MSG1 = "未匹配到数据，请工作人员选择";
     public static final String MSG2 = "孩子存在过敏，请工作人员选择";
+
     @Autowired
     private UserFillInfoMapper userFillInfoMapper;
     @Autowired
@@ -66,6 +67,7 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
         if (!user.isAdmin()) {
             userFillInfo.setUserId(user.getUserId());
         }
+        userFillInfo.setExt5("0");
         return userFillInfoMapper.selectUserFillInfoList(userFillInfo);
     }
 
@@ -88,7 +90,8 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
             userFillInfo.setState(StaticState.TWO);
             userFillInfo = getymData(userFillInfo);
         }
-
+        userFillInfo.setExt5("0");
+        userFillInfo.setExt3(null);
         return userFillInfoMapper.insertUserFillInfo(userFillInfo);
     }
 
@@ -109,7 +112,6 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
                 userFillInfo.setState(StaticState.TWO);
                 userFillInfo = getymData(userFillInfo);
             }
-
         }
 
         String ext2 = userFillInfo.getExt2();

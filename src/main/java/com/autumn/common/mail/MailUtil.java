@@ -38,6 +38,7 @@ public class MailUtil {
             helper.setFrom("发件人名字" + '<' + MAIL_SENDER + '>');
             javaMailSender.send(message);
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error("邮件发送失败", e.getMessage());
         }
     }
@@ -48,8 +49,10 @@ public class MailUtil {
             mailMessage.setFrom(MAIL_SENDER);//发送者
             mailMessage.setTo(mailBean.getRecipient());//接收者
             mailMessage.setSubject(mailBean.getSubject());//邮件标题
+            mailMessage.setText(mailBean.getContent());
             javaMailSender.send(mailMessage);//发送邮箱
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error("邮件发送失败", e.getMessage());
         }
     }
