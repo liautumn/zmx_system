@@ -65,7 +65,7 @@ public class SysRegisterService {
         } else if (!userService.checkUserNameUnique(sysUser)) {
             msg = "保存用户'" + username + "'失败，注册账号已存在";
         } else {
-            sysUser.setNickName(username);
+//            sysUser.setNickName(username);
             sysUser.setPassword(SecurityUtils.encryptPassword(password));
             sysUser.setPhonenumber(registerBody.getPhonenumber());
             sysUser.setEmail(registerBody.getEmail());
