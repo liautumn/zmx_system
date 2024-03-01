@@ -38,8 +38,11 @@ public class AgeVaccinesInfo extends BaseEntity {
     /**
      * 疫苗名称列表
      */
-    @Excel(name = "疫苗名称列表")
+    @Excel(name = "疫苗名称列表code")
     private String vaccinesCodes;
+
+    @Excel(name = "疫苗名称列表")
+    private String vaccinesNames;
 
     /**
      * 注意事项
@@ -247,5 +250,13 @@ public class AgeVaccinesInfo extends BaseEntity {
 
     public void setExt10(String ext10) {
         this.ext10 = ext10;
+    }
+
+    public String getVaccinesNames() {
+        return vaccinesNames;
+    }
+
+    public void setVaccinesNames(String vaccinesNames) {
+        this.vaccinesNames = vaccinesNames;
     }
 }

@@ -1,6 +1,7 @@
 package com.autumn.project.vaccines.mapper;
 
 import com.autumn.project.vaccines.domain.AgeVaccinesInfo;
+import com.autumn.project.vaccines.domain.VaccinesInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -61,4 +62,6 @@ public interface AgeVaccinesInfoMapper {
     public int deleteAgeVaccinesInfoByIds(Long[] ids);
 
     List<AgeVaccinesInfo> getAgeIntervalData(Map map);
+
+    List<VaccinesInfo> getVaccinesInfos(List<String> vaccinesCodesList);
 }

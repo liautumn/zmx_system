@@ -1,13 +1,17 @@
 package com.autumn.project.vaccines.service.impl;
 
+import com.alibaba.fastjson2.JSON;
 import com.autumn.common.utils.DateUtils;
 import com.autumn.common.utils.SecurityUtils;
+import com.autumn.common.utils.StringUtils;
 import com.autumn.project.system.domain.SysUser;
 import com.autumn.project.vaccines.domain.AgeVaccinesInfo;
+import com.autumn.project.vaccines.domain.VaccinesInfo;
 import com.autumn.project.vaccines.mapper.AgeVaccinesInfoMapper;
 import com.autumn.project.vaccines.service.IAgeVaccinesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -19,6 +23,7 @@ import java.util.List;
  */
 @Service
 public class AgeVaccinesInfoServiceImpl implements IAgeVaccinesInfoService {
+    public static final String MSG1 = "未匹配到数据，请联系工作人员";
     @Autowired
     private AgeVaccinesInfoMapper ageVaccinesInfoMapper;
 
@@ -57,7 +62,28 @@ public class AgeVaccinesInfoServiceImpl implements IAgeVaccinesInfoService {
      */
     @Override
     public List<AgeVaccinesInfo> selectAgeVaccinesInfoList(AgeVaccinesInfo ageVaccinesInfo) {
-        return ageVaccinesInfoMapper.selectAgeVaccinesInfoList(ageVaccinesInfo);
+        List<AgeVaccinesInfo> ageVaccinesInfos = ageVaccinesInfoMapper.selectAgeVaccinesInfoList(ageVaccinesInfo);
+        if (!CollectionUtils.isEmpty(ageVaccinesInfos)) {
+            for (AgeVaccinesInfo vaccinesInfo1 : ageVaccinesInfos) {
+                String vaccinesCodes = vaccinesInfo1.getVaccinesCodes();
+                if (StringUtils.isNotEmpty(vaccinesCodes)) {
+                    List<String> vaccinesCodesList = JSON.parseObject(vaccinesCodes, List.class);
+                    List<VaccinesInfo> vaccinesInfoList = ageVaccinesInfoMapper.getVaccinesInfos(vaccinesCodesList);
+                    if (!CollectionUtils.isEmpty(vaccinesInfoList)) {
+                        String msg1 = MSG1;
+                        for (VaccinesInfo vaccinesInfo : vaccinesInfoList) {
+                            if (msg1.equals(MSG1)) {
+                                msg1 = vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
+                            } else {
+                                msg1 = msg1 + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
+                            }
+                        }
+                        vaccinesInfo1.setVaccinesNames(msg1);
+                    }
+                }
+            }
+        }
+        return ageVaccinesInfos;
     }
 
     /**
