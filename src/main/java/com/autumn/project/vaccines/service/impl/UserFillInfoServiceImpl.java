@@ -34,6 +34,7 @@ import java.util.Map;
 public class UserFillInfoServiceImpl implements IUserFillInfoService {
     public static final String MSG1 = "未匹配到数据，请工作人员选择";
     public static final String MSG2 = "孩子存在过敏，请工作人员选择";
+    public static final String MSG3 = "该时间段暂时无需打疫苗";
 
     @Autowired
     private UserFillInfoMapper userFillInfoMapper;
@@ -188,7 +189,6 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
             if (!CollectionUtils.isEmpty(ageVaccinesInfos)) {
 
                 String msg = MSG1;
-                String flag = "0";
                 AgeVaccinesInfo ageVaccinesInfo = ageVaccinesInfos.get(0);
                 String vaccinesCodes = ageVaccinesInfo.getVaccinesCodes();
                 String[] vaccinesCodeList = JSON.parseObject(vaccinesCodes, String[].class);
@@ -203,19 +203,18 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
                             msg = msg + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
                         }
                     }
+                    userFillInfo.setExt1(msg);
+                    if (!msg.equals(MSG1)) {
+                        userFillInfo.setState(StaticState.THREE);
+                    }
                 } else {
-                    flag = "1";
+                    //标记位是否需要人工选择
+                    userFillInfo.setExt2("2");
+                    userFillInfo.setExt1(MSG3);
                 }
-                userFillInfo.setExt1(msg);
-                if (!msg.equals(MSG1)) {
-                    userFillInfo.setState(StaticState.THREE);
-                }
-                //标记位是否需要人工选择
-                userFillInfo.setExt2(flag);
             } else {
-                userFillInfo.setExt1(MSG1);
-                //标记位需要人工选择
-                userFillInfo.setExt2("1");
+                userFillInfo.setExt2("2");
+                userFillInfo.setExt1(MSG3);
             }
         } else {
             userFillInfo.setExt1(MSG2);
