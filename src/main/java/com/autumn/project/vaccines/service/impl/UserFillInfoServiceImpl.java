@@ -19,10 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 用户填报信息Service业务层处理
@@ -104,7 +101,8 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
      */
     @Override
     public int updateUserFillInfo(UserFillInfo userFillInfo) {
-
+        String ext7 = userFillInfo.getExt7();
+        userFillInfo.setExt7(null);
         if (StringUtils.isNotBlank(userFillInfo.getRoleFlag())) {
             if (userFillInfo.getRoleFlag().equals(StaticState.ONE)) {
                 userFillInfo.setState(StaticState.ONE);
@@ -125,16 +123,26 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
                     map.put("vaccinesCodes", JSON.parse(userFillInfo.getExt3()));
                     List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.getIntervalDataByMap(map);
                     String msg = "";
+                    List<Map> list = new ArrayList();
                     for (VaccinesInfo vaccinesInfo : vaccinesInfoList) {
                         if (msg.equals("")) {
+                            Map map2 = new HashMap();
+                            map2.put("label", vaccinesInfo.getVaccinesName());
+                            map2.put("value", vaccinesInfo.getVaccinesCode());
+                            list.add(map2);
                             msg = vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
                         } else {
+                            Map map2 = new HashMap();
+                            map2.put("label", vaccinesInfo.getVaccinesName());
+                            map2.put("value", vaccinesInfo.getVaccinesCode());
+                            list.add(map2);
                             msg = msg + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
                         }
                     }
                     userFillInfo.setExt1(msg);
                     if (!msg.equals("")) {
                         userFillInfo.setState(StaticState.THREE);
+                        userFillInfo.setExt6(JSON.toJSONString(list));
                     }
                     //标记位不需要人工选择
                     userFillInfo.setExt2("0");
@@ -147,6 +155,36 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
                 userFillInfo.setState(StaticState.FOUR);
             }
             if (userFillInfo.getRoleFlag().equals(StaticState.FIVE)) {
+                userFillInfo.setExt7(ext7);
+                if (StringUtils.isNotBlank(ext7) && !ext7.equals("null")) {
+                    //扣除数量
+                    String str = JSON.parseObject(ext7, String.class);
+                    if (!StringUtils.isEmpty(str)) {
+                        VaccinesInfo vaccinesInfo = new VaccinesInfo();
+                        vaccinesInfo.setVaccinesCode(str);
+                        List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.selectVaccinesInfoList(vaccinesInfo);
+                        if (!CollectionUtils.isEmpty(vaccinesInfoList)) {
+                            VaccinesInfo info = vaccinesInfoList.get(0);
+                            if (info.getExt1() > 0) {
+                                //扣除一个数量
+                                VaccinesInfo vaccinesInfo2 = new VaccinesInfo();
+                                vaccinesInfo2.setId(info.getId());
+                                vaccinesInfo2.setExt1(info.getExt1() - 1);
+                                int i = vaccinesInfoMapper.updateVaccinesInfo(vaccinesInfo2);
+                                if (i <= 0) {
+                                    throw new RuntimeException("疫苗数量扣除失败，请联系管理员");
+                                }
+                            } else {
+                                //数量不够抛出异常
+                                throw new RuntimeException("疫苗数量不足，请更换或者联系管理员");
+                            }
+                        } else {
+                            throw new RuntimeException("查询疫苗详情失败，请联系管理员");
+                        }
+                    } else {
+                        throw new RuntimeException("查询疫苗数量失败，请联系管理员");
+                    }
+                }
                 userFillInfo.setState(StaticState.FIVE);
             }
         }
@@ -171,55 +209,65 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
     }
 
     public UserFillInfo getymData(UserFillInfo userFillInfo) {
-        //系统根据数据选择
-        String childrenAllergy = userFillInfo.getChildrenAllergy();
-        boolean notBlank = StringUtils.isBlank(childrenAllergy);
-        if (notBlank) {
-            //计算年龄天数
-            Date today = userFillInfo.getToday();
-            Date childrenBirthday = userFillInfo.getChildrenBirthday();
-            int days = DateUtils.differentDaysByMillisecond(childrenBirthday, today);
-            if (days == 0) {
-                days = 1;
-            }
+        //计算年龄天数
+        Date today = userFillInfo.getToday();
+        Date childrenBirthday = userFillInfo.getChildrenBirthday();
+        int days = DateUtils.differentDaysByMillisecond(childrenBirthday, today);
+        if (days == 0) {
+            days = 1;
+        }
 
-            Map map = new HashMap();
-            map.put("age", days);
-            List<AgeVaccinesInfo> ageVaccinesInfos = ageVaccinesInfoMapper.getAgeIntervalData(map);
-            if (!CollectionUtils.isEmpty(ageVaccinesInfos)) {
+        Map map = new HashMap();
+        map.put("age", days);
+        List<AgeVaccinesInfo> ageVaccinesInfos = ageVaccinesInfoMapper.getAgeIntervalData(map);
+        if (!CollectionUtils.isEmpty(ageVaccinesInfos)) {
 
-                String msg = MSG1;
-                AgeVaccinesInfo ageVaccinesInfo = ageVaccinesInfos.get(0);
-                String vaccinesCodes = ageVaccinesInfo.getVaccinesCodes();
-                String[] vaccinesCodeList = JSON.parseObject(vaccinesCodes, String[].class);
-                Map map1 = new HashMap();
-                map1.put("vaccinesCodes", vaccinesCodeList);
-                List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.getIntervalDataByMap(map1);
-                if (!CollectionUtils.isEmpty(vaccinesInfoList)) {
+            String msg = MSG1;
+            AgeVaccinesInfo ageVaccinesInfo = ageVaccinesInfos.get(0);
+            String vaccinesCodes = ageVaccinesInfo.getVaccinesCodes();
+            String[] vaccinesCodeList = JSON.parseObject(vaccinesCodes, String[].class);
+            Map map1 = new HashMap();
+            map1.put("vaccinesCodes", vaccinesCodeList);
+            List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.getIntervalDataByMap(map1);
+            if (!CollectionUtils.isEmpty(vaccinesInfoList)) {
+                //系统根据数据选择
+                String childrenAllergy = userFillInfo.getChildrenAllergy();
+                boolean notBlank = StringUtils.isBlank(childrenAllergy);
+                if (notBlank) {
+                    List<Map> list = new ArrayList();
                     for (VaccinesInfo vaccinesInfo : vaccinesInfoList) {
                         if (msg.equals(MSG1)) {
+                            Map map2 = new HashMap();
+                            map2.put("label", vaccinesInfo.getVaccinesName());
+                            map2.put("value", vaccinesInfo.getVaccinesCode());
+                            list.add(map2);
                             msg = vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
                         } else {
+                            Map map2 = new HashMap();
+                            map2.put("label", vaccinesInfo.getVaccinesName());
+                            map2.put("value", vaccinesInfo.getVaccinesCode());
+                            list.add(map2);
                             msg = msg + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
                         }
                     }
                     userFillInfo.setExt1(msg);
                     if (!msg.equals(MSG1)) {
                         userFillInfo.setState(StaticState.THREE);
+                        userFillInfo.setExt6(JSON.toJSONString(list));
                     }
                 } else {
-                    //标记位是否需要人工选择
-                    userFillInfo.setExt2("2");
-                    userFillInfo.setExt1(MSG3);
+                    userFillInfo.setExt1(MSG2);
+                    //标记位需要人工选择
+                    userFillInfo.setExt2("1");
                 }
             } else {
+                //标记位是否需要人工选择
                 userFillInfo.setExt2("2");
                 userFillInfo.setExt1(MSG3);
             }
         } else {
-            userFillInfo.setExt1(MSG2);
-            //标记位需要人工选择
-            userFillInfo.setExt2("1");
+            userFillInfo.setExt2("2");
+            userFillInfo.setExt1(MSG3);
         }
         return userFillInfo;
     }

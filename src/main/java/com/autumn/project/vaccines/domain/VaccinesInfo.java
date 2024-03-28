@@ -54,9 +54,9 @@ public class VaccinesInfo extends BaseEntity {
     @Excel(name = "状态", dictType = "sys_normal_disable")
     private String state;
     /**
-     * 扩展字段1
+     * 疫苗可用数量
      */
-    private String ext1;
+    private Long ext1;
     /**
      * 扩展字段2
      */
@@ -158,11 +158,11 @@ public class VaccinesInfo extends BaseEntity {
         this.state = state;
     }
 
-    public String getExt1() {
+    public Long getExt1() {
         return ext1;
     }
 
-    public void setExt1(String ext1) {
+    public void setExt1(Long ext1) {
         this.ext1 = ext1;
     }
 
