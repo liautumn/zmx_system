@@ -7,4 +7,9 @@ public class StaticState {
     public static final String THREE = "3";
     public static final String FOUR = "4";
     public static final String FIVE = "5";
+
+    //1无需接种 2未接种 3已接种
+    public static final String WXJZ = "1";
+    public static final String WJZ = "2";
+    public static final String YJZ = "3";
 }

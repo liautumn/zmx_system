@@ -5,12 +5,15 @@ import com.autumn.common.mail.MailBean;
 import com.autumn.common.mail.MailUtil;
 import com.autumn.common.utils.DateUtils;
 import com.autumn.common.utils.SecurityUtils;
+import com.autumn.framework.redis.RedisCache;
 import com.autumn.project.common.StaticState;
 import com.autumn.project.system.domain.SysUser;
 import com.autumn.project.vaccines.domain.AgeVaccinesInfo;
+import com.autumn.project.vaccines.domain.NurseInfo;
 import com.autumn.project.vaccines.domain.UserFillInfo;
 import com.autumn.project.vaccines.domain.VaccinesInfo;
 import com.autumn.project.vaccines.mapper.AgeVaccinesInfoMapper;
+import com.autumn.project.vaccines.mapper.NurseInfoMapper;
 import com.autumn.project.vaccines.mapper.UserFillInfoMapper;
 import com.autumn.project.vaccines.mapper.VaccinesInfoMapper;
 import com.autumn.project.vaccines.service.IUserFillInfoService;
@@ -19,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -101,6 +105,16 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
      */
     @Override
     public int updateUserFillInfo(UserFillInfo userFillInfo) {
+
+        if (StringUtils.isNotBlank(userFillInfo.getRoleFlag()) ? userFillInfo.getRoleFlag().equals("6") : false) {
+            //修改接种状态
+            UserFillInfo userFillInfo1 = new UserFillInfo();
+            userFillInfo1.setId(userFillInfo.getId());
+            userFillInfo1.setExt10(StaticState.YJZ);
+            int i = userFillInfoMapper.updateUserFillInfo(userFillInfo1);
+            return i;
+        }
+
         String ext7 = userFillInfo.getExt7();
         userFillInfo.setExt7(null);
         if (StringUtils.isNotBlank(userFillInfo.getRoleFlag())) {
@@ -254,22 +268,68 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
                     if (!msg.equals(MSG1)) {
                         userFillInfo.setState(StaticState.THREE);
                         userFillInfo.setExt6(JSON.toJSONString(list));
+
+                        NurseInfo nuese = getNuese();
+                        userFillInfo.setExt8(nuese.getNurseCode());
+                        userFillInfo.setExt9(nuese.getNurseName());
+
+                        userFillInfo.setExt10(StaticState.WJZ);
                     }
                 } else {
                     userFillInfo.setExt1(MSG2);
                     //标记位需要人工选择
                     userFillInfo.setExt2("1");
+
+                    NurseInfo nuese = getNuese();
+                    userFillInfo.setExt8(nuese.getNurseCode());
+                    userFillInfo.setExt9(nuese.getNurseName());
+
+                    userFillInfo.setExt10(StaticState.WJZ);
                 }
             } else {
                 //标记位是否需要人工选择
                 userFillInfo.setExt2("2");
                 userFillInfo.setExt1(MSG3);
+
+                userFillInfo.setExt10(StaticState.WXJZ);
             }
         } else {
             userFillInfo.setExt2("2");
             userFillInfo.setExt1(MSG3);
+
+            userFillInfo.setExt10(StaticState.WXJZ);
         }
         return userFillInfo;
+    }
+
+    @Resource
+    private NurseInfoMapper nurseInfoMapper;
+    @Resource
+    private RedisCache redisCache;
+
+    public NurseInfo getNuese() {
+        //轮询选择护士接种
+        //获取上一轮接种护士的排序
+        final String key = "nurseJZ";
+        Integer nurseJZ = redisCache.getCacheObject(key);
+        if (nurseJZ == null) {
+            //从第一个开始
+            NurseInfo nurseInfo = nurseInfoMapper.getOneInfo();
+            if (nurseInfo != null) {
+                redisCache.setCacheObject(key, nurseInfo.getExt1());
+            }
+            return nurseInfo;
+        }
+        //根据编号获取下一个护士信息
+        int i = nurseJZ + 1;
+        // 获取全部护士数量
+        Integer num = nurseInfoMapper.getAllNum();
+        if (i > num) {
+            i = 1;
+        }
+        NurseInfo nurseInfo = nurseInfoMapper.getNextInfoByNurseCode(i);
+        redisCache.setCacheObject(key, i);
+        return nurseInfo;
     }
 
     /**
