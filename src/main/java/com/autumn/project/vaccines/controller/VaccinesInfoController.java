@@ -40,6 +40,10 @@ public class VaccinesInfoController extends BaseController {
         vaccinesInfo.setState("0");
         List<VaccinesInfo> list = vaccinesInfoService.selectVaccinesInfoList(vaccinesInfo);
         List<Map> mapList = new ArrayList<>();
+        Map map1 = new HashMap();
+        map1.put("label", "无需接种(单选此项，不要多选)");
+        map1.put("value", "wxjz");
+        mapList.add(map1);
         for (VaccinesInfo info : list) {
             Map map = new HashMap();
             map.put("label", info.getVaccinesName());

@@ -1,6 +1,7 @@
 package com.autumn.project.vaccines.service.impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.autumn.common.mail.MailBean;
 import com.autumn.common.mail.MailUtil;
 import com.autumn.common.utils.DateUtils;
@@ -45,6 +46,10 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
     private MailUtil mailUtil;
     @Autowired
     private AgeVaccinesInfoMapper ageVaccinesInfoMapper;
+    @Resource
+    private NurseInfoMapper nurseInfoMapper;
+    @Resource
+    private RedisCache redisCache;
 
     /**
      * 查询用户填报信息
@@ -133,35 +138,51 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
             if (ext2.equals("1")) {
                 //需要人工添加数据
                 if (StringUtils.isNotBlank(userFillInfo.getExt3())) {
-                    Map map = new HashMap();
-                    map.put("vaccinesCodes", JSON.parse(userFillInfo.getExt3()));
-                    List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.getIntervalDataByMap(map);
-                    String msg = "";
-                    List<Map> list = new ArrayList();
-                    for (VaccinesInfo vaccinesInfo : vaccinesInfoList) {
-                        if (msg.equals("")) {
-                            Map map2 = new HashMap();
-                            map2.put("label", vaccinesInfo.getVaccinesName());
-                            map2.put("value", vaccinesInfo.getVaccinesCode());
-                            list.add(map2);
-                            msg = vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
-                        } else {
-                            Map map2 = new HashMap();
-                            map2.put("label", vaccinesInfo.getVaccinesName());
-                            map2.put("value", vaccinesInfo.getVaccinesCode());
-                            list.add(map2);
-                            msg = msg + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
+
+                    List<String> list1 = JSONObject.parseObject(userFillInfo.getExt3(), List.class);
+                    if (!list1.get(0).equals("wxjz")) {
+
+                        Map map = new HashMap();
+                        map.put("vaccinesCodes", JSON.parse(userFillInfo.getExt3()));
+                        List<VaccinesInfo> vaccinesInfoList = vaccinesInfoMapper.getIntervalDataByMap(map);
+                        String msg = "";
+                        List<Map> list = new ArrayList();
+                        for (VaccinesInfo vaccinesInfo : vaccinesInfoList) {
+                            if (msg.equals("")) {
+                                Map map2 = new HashMap();
+                                map2.put("label", vaccinesInfo.getVaccinesName());
+                                map2.put("value", vaccinesInfo.getVaccinesCode());
+                                list.add(map2);
+                                msg = vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
+                            } else {
+                                Map map2 = new HashMap();
+                                map2.put("label", vaccinesInfo.getVaccinesName());
+                                map2.put("value", vaccinesInfo.getVaccinesCode());
+                                list.add(map2);
+                                msg = msg + " 或 " + vaccinesInfo.getVaccinesName() + "-" + vaccinesInfo.getVaccinationMethodName();
+                            }
                         }
+                        userFillInfo.setExt1(msg);
+                        if (!msg.equals("")) {
+                            userFillInfo.setState(StaticState.THREE);
+                            userFillInfo.setExt6(JSON.toJSONString(list));
+                        }
+                        //标记位不需要人工选择
+                        userFillInfo.setExt2("0");
+
+                        //判断是否需要接种
+                        NurseInfo nuese = getNuese();
+                        userFillInfo.setExt8(nuese.getNurseCode());
+                        userFillInfo.setExt9(nuese.getNurseName());
+                        userFillInfo.setExt10(StaticState.WJZ);
+                    } else {
+                        userFillInfo.setExt1("无需接种疫苗");
+                        userFillInfo.setExt10(StaticState.WXJZ);
                     }
-                    userFillInfo.setExt1(msg);
-                    if (!msg.equals("")) {
-                        userFillInfo.setState(StaticState.THREE);
-                        userFillInfo.setExt6(JSON.toJSONString(list));
-                    }
-                    //标记位不需要人工选择
-                    userFillInfo.setExt2("0");
+
                 }
             }
+
         }
 
         if (StringUtils.isNotBlank(userFillInfo.getRoleFlag())) {
@@ -279,12 +300,6 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
                     userFillInfo.setExt1(MSG2);
                     //标记位需要人工选择
                     userFillInfo.setExt2("1");
-
-                    NurseInfo nuese = getNuese();
-                    userFillInfo.setExt8(nuese.getNurseCode());
-                    userFillInfo.setExt9(nuese.getNurseName());
-
-                    userFillInfo.setExt10(StaticState.WJZ);
                 }
             } else {
                 //标记位是否需要人工选择
@@ -301,11 +316,6 @@ public class UserFillInfoServiceImpl implements IUserFillInfoService {
         }
         return userFillInfo;
     }
-
-    @Resource
-    private NurseInfoMapper nurseInfoMapper;
-    @Resource
-    private RedisCache redisCache;
 
     public NurseInfo getNuese() {
         //轮询选择护士接种
